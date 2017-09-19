@@ -1,3 +1,4 @@
 ---
 # defaults file for win_base
 chocolatey_lib_path: 'c:\ProgramData\chocolatey\lib'
+ansible_install_dir: 'c:\ansible_install'

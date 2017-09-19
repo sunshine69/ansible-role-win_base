@@ -3,6 +3,6 @@
   "setWallpaper": true,
   "addDnsSuffixList": true,
   "extendBootVolumeSize": true,
-  "adminPasswordType": "Specify",
-  "adminPassword":  "{{ test_stevek.admin_password }}"
+  "adminPasswordType": "Random",
+  "adminPassword":  ""
 }

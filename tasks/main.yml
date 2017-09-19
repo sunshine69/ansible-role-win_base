@@ -1,6 +1,6 @@
 - name: Make sure ansible-install dir exist
   win_file:
-    path: 'C:\ansible_install'
+    path: '{{ ansible_install_dir }}'
     state: directory
 
 - block:
@@ -8,21 +8,21 @@
     - name: copy ec2 launch. This is to replace ec2-config to enable cloud init if the nano instance does not have it installed automatically.
       win_copy:
         src: "{{ item }}"
-        dest: 'c:\ansible_install\{{ item|basename }}'
+        dest: '{{ ansible_install_dir }}\{{ item|basename }}'
       with_items:
         - "EC2-Windows-Launch.zip"
         - "install.ps1"
 
     - name: Run the install script for ec2 launch
-      win_shell: c:\ansible_install\install.ps1 >> c:\ansible_install\ec2-launch-install.log
+      win_shell: '{{ ansible_install_dir }}\install.ps1 >> {{ ansible_install_dir }}\ec2-launch-install.log'
       args:
-        chdir: c:\ansible_install
+        chdir: '{{ ansible_install_dir }}'
         creates: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1
 
     - name: Deploy the initialization config
       win_template:
         src: "{{ item }}"
-        dest: 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\{{ item|basename }}'
+        dest: 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\{{ item|win_basename }}'
       with_items:
         - "LaunchConfig.json"
         - "DriveLetterMappingConfig.json"
