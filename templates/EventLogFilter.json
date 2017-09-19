@@ -1,0 +1,10 @@
+{
+  "events": [
+    {
+      "logName": "System",
+      "source": "An event source (optional)",
+      "level": "Error",
+      "numEntries": 3
+    }
+  ]
+}

@@ -7,11 +7,11 @@
     # This section is based on http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2launch.html
     - name: copy ec2 launch. This is to replace ec2-config to enable cloud init if the nano instance does not have it installed automatically.
       win_copy:
-        src: "{{item}}"
-        dest: "c:\\ansible_install\\{{item|basename}}"
+        src: "{{ item }}"
+        dest: 'c:\ansible_install\{{ item|basename }}'
       with_items:
-        - "{{ inventory_dir }}/../files/EC2-Windows-Launch.zip"
-        - "{{ inventory_dir }}/../files/install.ps1"
+        - "EC2-Windows-Launch.zip"
+        - "install.ps1"
 
     - name: Run the install script for ec2 launch
       win_shell: c:\ansible_install\install.ps1 >> c:\ansible_install\ec2-launch-install.log
@@ -24,9 +24,9 @@
         src: "{{ item }}"
         dest: 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\{{ item|basename }}'
       with_items:
-        - "{{ inventory_dir }}/../templates/LaunchConfig.json"
-        - "{{ inventory_dir }}/../templates/DriveLetterMappingConfig.json"
-        - "{{ inventory_dir }}/../templates/EventLogFilter.json"
+        - "LaunchConfig.json"
+        - "DriveLetterMappingConfig.json"
+        - "EventLogFilter.json"
 
     - name: Schedule ec2 launch at init
       win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1 -Schedule
@@ -58,8 +58,8 @@
 
 - name: Deploy file beat config
   win_template:
-    src: "{{ inventory_dir }}/../templates/filebeat.yml"
-    dest: 'C:\ProgramData\chocolatey\lib\filebeat\tools\filebeat-{{ filebeat_version }}-windows-{{ machine_arch }}\filebeat.yml'
+    src: "filebeat.yml"
+    dest: '{{ chocolatey_lib_path }}\filebeat\tools\filebeat-{{ filebeat_version }}-windows-{{ machine_arch }}\filebeat.yml'
 
 - name: Enable filebeat service
   win_service:
@@ -75,8 +75,8 @@
 
 - name: Deploy winlogbeat config
   win_template:
-    src: "{{ inventory_dir }}/../templates/winlogbeat.yml"
-    dest: 'C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat-{{ winlogbeat_version }}-windows-{{ machine_arch }}\winlogbeat.yml'
+    src: "winlogbeat.yml"
+    dest: '{{ chocolatey_lib_path }}\winlogbeat\tools\winlogbeat-{{ winlogbeat_version }}-windows-{{ machine_arch }}\winlogbeat.yml'
 
 - name: Enable winlogbeat service
   win_service:
