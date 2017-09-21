@@ -2,3 +2,18 @@
 # defaults file for win_base
 chocolatey_lib_path: 'c:\ProgramData\chocolatey\lib'
 ansible_install_dir: 'c:\ansible_install'
+
+winlogbeat_config:
+  winlogbeat:
+    event_logs:
+      - name: Application
+        ignore_older: 72h
+      - name: Security
+      - name: System
+  output:
+    logstash:
+      hosts: [ "TBA" ]
+      ssl: "TBA"
+  logging:
+    to_syslog: true
+    level: error

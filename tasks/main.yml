@@ -44,25 +44,8 @@
 
   when: ansible_owner_name == "EC2"
 
-- name: Install Filebeat
-  win_chocolatey:
-    name: filebeat
-    state: present
-    version: "{{ filebeat_version }}"
-
 - set_fact:
     machine_arch: "{{ 'x86' if ansible_env.PROCESSOR_ARCHITECTURE == 'x86' else 'x86_64' }}"
-
-- name: Deploy file beat config
-  win_template:
-    src: "filebeat.yml"
-    dest: '{{ chocolatey_lib_path }}\filebeat\tools\filebeat-{{ filebeat_version }}-windows-{{ machine_arch }}\filebeat.yml'
-
-- name: Enable filebeat service
-  win_service:
-    name: filebeat
-    start_mode: auto
-    state: restarted
 
 - name: Install winlogbeat to ship window event log
   win_chocolatey:
@@ -87,6 +70,7 @@
     dest: '{{ ansible_install_dir }}\SetAdminPassword.ps1'
     newline_sequence: '\r\n'
 
+# Run this at last to be sure the password has changed.
 - name: Run the change password
   win_shell: '{{ ansible_install_dir }}\SetAdminPassword.ps1'
 
