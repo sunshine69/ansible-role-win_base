@@ -90,6 +90,7 @@
   win_template:
     src: "SetAdminPassword.ps1"
     dest: '{{ ansible_install_dir }}\SetAdminPassword.ps1'
+    newline_sequence: '\r\n'
 
 - name: Run the change password
   win_shell: '{{ ansible_install_dir }}\SetAdminPassword.ps1'
