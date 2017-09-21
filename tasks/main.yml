@@ -44,11 +44,6 @@
 
   when: ansible_owner_name == "EC2"
 
-- name: Install google chrome
-  win_chocolatey:
-    name: googlechrome
-    state: present
-
 - name: Install Filebeat
   win_chocolatey:
     name: filebeat
