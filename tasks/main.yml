@@ -33,3 +33,4 @@
     state: present
     update_password: always
   ignore_errors: yes
+  when: initial_password is defined
