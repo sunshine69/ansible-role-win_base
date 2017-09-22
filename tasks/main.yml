@@ -3,47 +3,6 @@
     path: '{{ ansible_install_dir }}'
     state: directory
 
-- block:
-    # This section is based on http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2launch.html
-    # Unfortunately the password change - generate does not work form my test. Thus
-    # we use our own set password below.
-    - name: copy ec2 launch. This is to replace ec2-config to enable cloud init if the nano instance does not have it installed automatically.
-      win_copy:
-        src: "{{ item }}"
-        dest: '{{ ansible_install_dir }}\{{ item|basename }}'
-      with_items:
-        - "EC2-Windows-Launch.zip"
-        - "install.ps1"
-
-    - name: Run the install script for ec2 launch
-      win_shell: '{{ ansible_install_dir }}\install.ps1 >> {{ ansible_install_dir }}\ec2-launch-install.log'
-      args:
-        chdir: '{{ ansible_install_dir }}'
-        creates: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1
-
-    - name: Deploy the initialization config
-      win_template:
-        src: "{{ item }}"
-        dest: 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\{{ item|win_basename }}'
-      with_items:
-        - "LaunchConfig.json"
-        - "DriveLetterMappingConfig.json"
-        - "EventLogFilter.json"
-
-    - name: Schedule ec2 launch at init
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1 -Schedule
-
-    - name: Initialize Drives and Drive Letter Mappings
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeDisks.ps1 -Schedule
-
-    - name: Send Windows Event logs
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\SendEventLogs.ps1 -Schedule
-
-    - name: Send Windows Is Ready Message After A Successful Boot
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\SendWindowsIsReady.ps1 -Schedule
-
-  when: ansible_owner_name == "EC2"
-
 - set_fact:
     machine_arch: "{{ 'x86' if ansible_env.PROCESSOR_ARCHITECTURE == 'x86' else 'x86_64' }}"
 
@@ -64,17 +23,13 @@
     start_mode: auto
     state: restarted
 
-- name: Deploy Set password scripts
-  win_template:
-    src: "SetAdminPassword.ps1"
-    dest: '{{ ansible_install_dir }}\SetAdminPassword.ps1'
-    newline_sequence: '\r\n'
-
-# Run this at last to be sure the password has changed.
-- name: Run the change password
-  win_shell: '{{ ansible_install_dir }}\SetAdminPassword.ps1'
-
-- name: Clean up the file
-  win_file:
-    path: '{{ ansible_install_dir }}\SetAdminPassword.ps1'
-    state: absent
+# This seems to be window bug. I use this ansible module or my own PS script to
+# set password it always return InvalidCredentialsError but the password is
+# actually changed.
+- name: Set admin password
+  win_user:
+    name: Administrator
+    password: "{{ admin_password }}"
+    state: present
+    update_password: always
+  ignore_errors: yes

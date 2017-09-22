@@ -17,3 +17,5 @@ winlogbeat_config:
   logging:
     to_syslog: true
     level: error
+
+admin_password: "should-be-set-in-inventory"
