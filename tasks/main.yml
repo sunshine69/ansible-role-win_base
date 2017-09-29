@@ -1,71 +1,10 @@
 - name: Make sure ansible-install dir exist
   win_file:
-    path: 'C:\ansible_install'
+    path: '{{ ansible_install_dir }}'
     state: directory
-
-- block:
-    # This section is based on http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2launch.html
-    - name: copy ec2 launch. This is to replace ec2-config to enable cloud init if the nano instance does not have it installed automatically.
-      win_copy:
-        src: "{{ item }}"
-        dest: 'c:\ansible_install\{{ item|basename }}'
-      with_items:
-        - "EC2-Windows-Launch.zip"
-        - "install.ps1"
-
-    - name: Run the install script for ec2 launch
-      win_shell: c:\ansible_install\install.ps1 >> c:\ansible_install\ec2-launch-install.log
-      args:
-        chdir: c:\ansible_install
-        creates: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1
-
-    - name: Deploy the initialization config
-      win_template:
-        src: "{{ item }}"
-        dest: 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\{{ item|basename }}'
-      with_items:
-        - "LaunchConfig.json"
-        - "DriveLetterMappingConfig.json"
-        - "EventLogFilter.json"
-
-    - name: Schedule ec2 launch at init
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1 -Schedule
-
-    - name: Initialize Drives and Drive Letter Mappings
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeDisks.ps1 -Schedule
-
-    - name: Send Windows Event logs
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\SendEventLogs.ps1 -Schedule
-
-    - name: Send Windows Is Ready Message After A Successful Boot
-      win_shell: C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\SendWindowsIsReady.ps1 -Schedule
-
-  when: ansible_owner_name == "EC2"
-
-- name: Install google chrome
-  win_chocolatey:
-    name: googlechrome
-    state: present
-
-- name: Install Filebeat
-  win_chocolatey:
-    name: filebeat
-    state: present
-    version: "{{ filebeat_version }}"
 
 - set_fact:
     machine_arch: "{{ 'x86' if ansible_env.PROCESSOR_ARCHITECTURE == 'x86' else 'x86_64' }}"
-
-- name: Deploy file beat config
-  win_template:
-    src: "filebeat.yml"
-    dest: '{{ chocolatey_lib_path }}\filebeat\tools\filebeat-{{ filebeat_version }}-windows-{{ machine_arch }}\filebeat.yml'
-
-- name: Enable filebeat service
-  win_service:
-    name: filebeat
-    start_mode: auto
-    state: restarted
 
 - name: Install winlogbeat to ship window event log
   win_chocolatey:
@@ -83,3 +22,15 @@
     name: winlogbeat
     start_mode: auto
     state: restarted
+
+# This seems to be window bug. I use this ansible module or my own PS script to
+# set password it always return InvalidCredentialsError but the password is
+# actually changed.
+- name: Set admin password
+  win_user:
+    name: Administrator
+    password: "{{ admin_password }}"
+    state: present
+    update_password: always
+  ignore_errors: yes
+  when: initial_password is defined
