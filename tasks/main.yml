@@ -16,12 +16,7 @@
   win_template:
     src: "winlogbeat.yml"
     dest: '{{ chocolatey_lib_path }}\winlogbeat\tools\winlogbeat-{{ winlogbeat_version }}-windows-{{ machine_arch }}\winlogbeat.yml'
-
-- name: Enable winlogbeat service
-  win_service:
-    name: winlogbeat
-    start_mode: auto
-    state: restarted
+  notify: Enable winlogbeat service
 
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
@@ -33,4 +28,4 @@
     state: present
     update_password: always
   ignore_errors: yes
-  when: initial_password is defined
+  when: initial_password is defined and initial_password
