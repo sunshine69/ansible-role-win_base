@@ -1,2 +1,5 @@
----
-# handlers file for win_base
+- name: Enable winlogbeat service
+  win_service:
+    name: winlogbeat
+    start_mode: auto
+    state: restarted
