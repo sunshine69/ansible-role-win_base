@@ -11,6 +11,12 @@
     name: winlogbeat
     state: present
     version: "{{ winlogbeat_version }}"
+  when: logstash_endpoint_list is defined and logstash_endpoint_list
+
+- name: Install google-chrome to make our life easier
+  win_chocolatey:
+    name: googlechrome
+    state: present
 
 - name: Deploy winlogbeat config
   win_template:
