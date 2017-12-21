@@ -21,6 +21,12 @@
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
 # actually changed.
+
+# So we need to do two things. Fireup the instance first, and then manually get
+# the password via aws console. Then re-run the playbook which select the
+# spawned instance - provide the initial_password.
+# From now on we no longer need initial_password.
+
 - name: Set admin password
   win_user:
     name: Administrator
