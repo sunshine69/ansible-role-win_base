@@ -12,6 +12,11 @@
     state: present
     version: "{{ winlogbeat_version }}"
 
+- name: Install google-chrome to make our life easier
+  win_chocolatey:
+    name: googlechrome
+    state: present
+
 - name: Deploy winlogbeat config
   win_template:
     src: "winlogbeat.yml"
