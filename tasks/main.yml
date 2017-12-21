@@ -17,6 +17,7 @@
     src: "winlogbeat.yml"
     dest: '{{ chocolatey_lib_path }}\winlogbeat\tools\winlogbeat-{{ winlogbeat_version }}-windows-{{ machine_arch }}\winlogbeat.yml'
   notify: Enable winlogbeat service
+  when: logstash_endpoint_list is defined and logstash_endpoint_list
 
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
