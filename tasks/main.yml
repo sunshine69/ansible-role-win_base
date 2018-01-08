@@ -11,12 +11,19 @@
     name: winlogbeat
     state: present
     version: "{{ winlogbeat_version }}"
+  when: logstash_endpoint_list is defined and logstash_endpoint_list
+
+- name: Install google-chrome to make our life easier
+  win_chocolatey:
+    name: googlechrome
+    state: present
 
 - name: Deploy winlogbeat config
   win_template:
     src: "winlogbeat.yml"
     dest: '{{ chocolatey_lib_path }}\winlogbeat\tools\winlogbeat-{{ winlogbeat_version }}-windows-{{ machine_arch }}\winlogbeat.yml'
   notify: Enable winlogbeat service
+  when: logstash_endpoint_list is defined and logstash_endpoint_list
 
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
@@ -35,3 +42,11 @@
     update_password: always
   ignore_errors: yes
   when: initial_password is defined and initial_password
+
+- name: Change ansible admin password
+  set_fact:
+    ansible_password: "{{ admin_password }}"
+  no_log: True
+  when: initial_password is defined and initial_password
+  vars:
+    ansible_connection: local
