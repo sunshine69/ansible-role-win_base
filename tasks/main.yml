@@ -25,6 +25,30 @@
   notify: Enable winlogbeat service
   when: logstash_endpoint_list is defined and logstash_endpoint_list
 
+# powershell_certificate_file_ext will be used in templates to make a decision
+# if we import the cert only for trust certs or the pfx file which has both key
+# and cert for listener
+- block:
+    - name: Get the powershell_certificate_file_name
+      set_fact:
+        powershell_certificate_file_name: "{{ powershell_certificate_file_path|win_basename }}"
+    - name: Detect cert ext:
+      set_fact:
+        powershell_certificate_file_ext: "{{ powershell_certificate_file_name|splitext|list|last }}"
+
+- name: Install certificate for Powershell
+  win_copy:
+    src: "{{ powershell_certificate_file_path }}"
+    dest: '{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}'
+
+- name: Deploy the role ansible setup PS scripts
+  win_template:
+    dest: '{{ ansible_install_dir }}\win_base-custom-setup.ps1'
+    src: 'win_base-custom-setup.ps1.j2'
+
+- name: Run the custom setup powershell script
+  win_command: "powershell {{ ansible_install_dir }}\win_base-custom-setup.ps1"
+
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
 # actually changed.
