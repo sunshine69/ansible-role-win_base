@@ -48,6 +48,8 @@
 
 - name: Run the custom setup powershell script
   win_command: 'powershell {{ ansible_install_dir }}\win_base-custom-setup.ps1'
+  args:
+    creates: '{{ ansible_install_dir }}\win_base-custom-setup.hasrun'
 
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is

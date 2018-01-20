@@ -19,3 +19,6 @@ New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -Certificat
 {% endif %}
 
 Write-Host Cert Thumbprint: $Thumbprint
+# touch a file to mark it we reach here - The +,, is a special flag to copy
+# telling it to simply update the date/time on the file
+echo $null >> {{ ansible_install_dir }}\win_base-custom-setup.hasrun
