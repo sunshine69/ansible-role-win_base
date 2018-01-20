@@ -70,6 +70,34 @@
         state: absent
   when: custom_powershell_commands is defined and custom_powershell_commands
 
+- block:
+    - name: Deploy the content of startup_powershell_commands as remote scripts
+      win_copy:
+        content: "{{ startup_powershell_commands }}"
+        dest: '{{ ansible_install_dir }}\startup_powershell_commands.ps1'
+
+    - name: Run the role based startup_powershell_commands
+      win_command: 'powershell {{ ansible_install_dir }}\startup_powershell_commands.ps1'
+
+    - name: Deploy the start up task
+      win_scheduled_task:
+        name: run startup_powershell_commands
+        state: present
+        actions:
+        - path: powershell.exe
+          arguments: '{{ ansible_install_dir }}\startup_powershell_commands.ps1'
+        triggers:
+        - type: boot
+  rescue:
+    - debug:
+        msg: "Some error running startup_powershell_commands"
+  always:
+    - name: clean up temporary script
+      win_file:
+        path: '{{ ansible_install_dir }}\temporary-script.ps1'
+        state: absent
+  when: startup_powershell_commands is defined and startup_powershell_commands
+
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
 # actually changed.
