@@ -50,6 +50,11 @@
   win_command: 'powershell {{ ansible_install_dir }}\win_base-custom-setup.ps1'
   args:
     creates: '{{ ansible_install_dir }}\win_base-custom-setup.hasrun'
+  ignore_errors: yes
+
+- name: Run the role based custom setup powershell commands from custom_powershell_commands
+  win_command: 'powershell {{ item }}'
+  with_items: "{{ custom_powershell_commands }}"
 
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
