@@ -98,6 +98,24 @@
         state: absent
   when: startup_powershell_commands is defined and startup_powershell_commands
 
+- name: Setting up firewall rules on variable win_firewall_rules
+  win_firewall_rule:
+    name: "{{ item.name }}"
+    localip: "{{ item.localip|default(omit) }}"
+    localport: "{{ item.localport|default(item.port) }}"
+    action: "{{ item.action|default('allow') }}"
+    direction: "{{ item.direction|default('in') }}"
+    protocol: "{{ item.protocol }}"
+    state: "{{ item.state|default('present') }}"
+    enabled: "{{ item.enabled|default('yes') }}"
+    profiles: "{{ item.profiles|default(omit) }}"
+    remoteip: "{{ item.remoteip|default(omit) }}"
+    remoteport: "{{ item.remoteport|default(omit) }}"
+    service: "{{ item.service|default(omit) }}"
+    program: "{{ item.program|default(omit) }}"
+    description: "{{ item.description }}"
+  with_items: "{{ win_firewall_rules|default([]) }}"
+
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
 # actually changed.
