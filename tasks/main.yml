@@ -48,6 +48,73 @@
 
 - name: Run the custom setup powershell script
   win_command: 'powershell {{ ansible_install_dir }}\win_base-custom-setup.ps1'
+  args:
+    creates: '{{ ansible_install_dir }}\win_base-custom-setup.hasrun'
+  ignore_errors: yes
+
+- block:
+    - name: Deploy the content of custom_powershell_commands as remote scripts
+      win_copy:
+        content: "{{ custom_powershell_commands }}"
+        dest: '{{ ansible_install_dir }}\temporary-script.ps1'
+
+    - name: Run the role based custom setup powershell commands from custom_powershell_commands
+      win_command: 'powershell {{ ansible_install_dir }}\temporary-script.ps1'
+  rescue:
+    - debug:
+        msg: "Some error running custom_powershell_commands"
+  always:
+    - name: clean up temporary script
+      win_file:
+        path: '{{ ansible_install_dir }}\temporary-script.ps1'
+        state: absent
+  when: custom_powershell_commands is defined and custom_powershell_commands
+
+- block:
+    - name: Deploy the content of startup_powershell_commands as remote scripts
+      win_copy:
+        content: "{{ startup_powershell_commands }}"
+        dest: '{{ ansible_install_dir }}\startup_powershell_commands.ps1'
+
+    - name: Run the role based startup_powershell_commands
+      win_command: 'powershell {{ ansible_install_dir }}\startup_powershell_commands.ps1'
+
+    - name: Deploy the start up task
+      win_scheduled_task:
+        name: run startup_powershell_commands
+        state: present
+        actions:
+        - path: powershell.exe
+          arguments: '{{ ansible_install_dir }}\startup_powershell_commands.ps1'
+        triggers:
+        - type: boot
+  rescue:
+    - debug:
+        msg: "Some error running startup_powershell_commands"
+  always:
+    - name: clean up temporary script
+      win_file:
+        path: '{{ ansible_install_dir }}\temporary-script.ps1'
+        state: absent
+  when: startup_powershell_commands is defined and startup_powershell_commands
+
+- name: Setting up firewall rules on variable win_firewall_rules
+  win_firewall_rule:
+    name: "{{ item.name }}"
+    localip: "{{ item.localip|default(omit) }}"
+    localport: "{{ item.localport|default(item.port) }}"
+    action: "{{ item.action|default('allow') }}"
+    direction: "{{ item.direction|default('in') }}"
+    protocol: "{{ item.protocol }}"
+    state: "{{ item.state|default('present') }}"
+    enabled: "{{ item.enabled|default('yes') }}"
+    profiles: "{{ item.profiles|default(omit) }}"
+    remoteip: "{{ item.remoteip|default(omit) }}"
+    remoteport: "{{ item.remoteport|default(omit) }}"
+    service: "{{ item.service|default(omit) }}"
+    program: "{{ item.program|default(omit) }}"
+    description: "{{ item.description }}"
+  with_items: "{{ win_firewall_rules|default([]) }}"
 
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
