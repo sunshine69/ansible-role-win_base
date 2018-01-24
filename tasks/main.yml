@@ -70,38 +70,10 @@
         state: absent
   when: custom_powershell_commands is defined and custom_powershell_commands
 
-- block:
-    - name: Deploy the content of startup_powershell_commands as remote scripts
-      win_copy:
-        content: "{{ startup_powershell_commands }}"
-        dest: '{{ ansible_install_dir }}\startup_powershell_commands.ps1'
-
-    - name: Run the role based startup_powershell_commands
-      win_command: 'powershell {{ ansible_install_dir }}\startup_powershell_commands.ps1'
-# This requires the latest win_scheduled_task module - see
-# https://github.com/ansible/ansible/issues/27248
-    - name: Deploy the start up task
-      win_scheduled_task:
-        name: win_base-run-startup_powershell_commands
-        description: run startup_powershell_commands
-        state: present
-        enabled: yes
-        username: SYSTEM
-        run_level: highest
-        actions:
-          - path: powershell.exe
-            arguments: '-ExecutionPolicy Unrestricted -NonInteractive -File {{ ansible_install_dir }}\startup_powershell_commands.ps1'
-        triggers:
-          - type: boot
-  rescue:
-    - debug:
-        msg: "Some error running startup_powershell_commands"
-  always:
-    - name: clean up temporary script
-      win_file:
-        path: '{{ ansible_install_dir }}\temporary-script.ps1'
-        state: absent
-  when: startup_powershell_commands is defined and startup_powershell_commands
+- include_tasks: deploy_scheduled_tasks.yml
+  with_items: "{{ win_base_scheduled_tasks|default([]) }}"
+  loop_control:
+    loop_var: win_base_scheduled_tasks_item
 
 - name: Setting up firewall rules on variable win_firewall_rules
   win_firewall_rule:
