@@ -22,7 +22,7 @@ Requirements
 ------------
 
 This requires the latest win_scheduled_task module - see
-https://github.com/ansible/ansible/issues/27248
+https://github.com/ansible/ansible/pull/28995
 
 Role Variables
 --------------
