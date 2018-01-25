@@ -24,3 +24,6 @@ powershell_certificate_file_path: "local_cert_file_path_to_copy_to_remote"
 # List of firewall rules to setup. See
 # http://docs.ansible.com/ansible/latest/win_firewall_rule_module.html
 win_firewall_rules: []
+# List of scheduled tasks to be deployed. For all sub options see the
+# task/deploy_schedule_tasks.yml
+win_base_scheduled_tasks: []

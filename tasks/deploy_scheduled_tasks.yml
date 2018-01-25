@@ -1,0 +1,54 @@
+- block:
+    - name: Deploy the content of startup_powershell_commands as remote scripts
+      win_copy:
+        content: "{{ win_base_scheduled_tasks_item.content }}"
+        dest: '{{ ansible_install_dir }}\scheduled_task_{{ win_base_scheduled_tasks_item.name }}.ps1'
+
+    - name: Run the role based startup_powershell_commands
+      win_command: 'powershell {{ ansible_install_dir }}\scheduled_task_{{ win_base_scheduled_tasks_item.name }}.ps1'
+      when: win_base_scheduled_tasks_item.runnow|default(false)
+
+# This requires the latest win_scheduled_task module - see
+# https://github.com/ansible/ansible/pull/28995
+    - name: Deploy the start up task
+      win_scheduled_task:
+        name: "{{ win_base_scheduled_tasks_item.name }}"
+        description: "{{ win_base_scheduled_tasks_item.description }}"
+        state: "{{ win_base_scheduled_tasks_item.state }}"
+        enabled: yes
+        username: "{{ win_base_scheduled_tasks_item.username|default('SYSTEM') }}"
+        password: "{{ win_base_scheduled_tasks_item.password|default(omit) }}"
+        update_password: "{{ win_base_scheduled_tasks_item.update_password|default(omit) }}"
+        store_password: "{{ win_base_scheduled_tasks_item.store_password|default(omit) }}"
+        display_name: "{{ win_base_scheduled_tasks_item.display_name|default(omit) }}"
+        group: "{{ win_base_scheduled_tasks_item.group|default(omit) }}"
+        logon_type: "{{ win_base_scheduled_tasks_item.logon_type|default(omit) }}"
+
+        run_level: "{{ win_base_scheduled_tasks_item.run_level|default('highest') }}"
+        actions:
+          - path: "{{ win_base_scheduled_tasks_item.executable|default('powershell.exe') }}"
+            arguments: '{{ win_base_scheduled_tasks_item.arguments|default("-ExecutionPolicy Unrestricted -NonInteractive -File {{ ansible_install_dir }}\scheduled_task_{{ win_base_scheduled_tasks_item.name }}.ps1")'
+        triggers:
+          - type: "{{ win_base_scheduled_tasks_item.trigger_type|default('boot') }}"
+            enabled: "{{ win_base_scheduled_tasks_item.trigger_enabled|default(omit) }}"
+            start_boundary: "{{ win_base_scheduled_tasks_item.trigger_start_boundary|default(omit) }}"
+            end_boundary: "{{ win_base_scheduled_tasks_item.trigger_end_boundary|default(omit) }}"
+            execution_time_limit: "{{ win_base_scheduled_tasks_item.trigger_execution_time_limit|default(omit) }}"
+            delay: "{{ win_base_scheduled_tasks_item.trigger_delay|default(omit) }}"
+            random_delay: "{{ win_base_scheduled_tasks_item.trigger_random_delay|default(omit) }}"
+            subscription: "{{ win_base_scheduled_tasks_item.trigger_subscription|default(omit) }}"
+            user_id: "{{ win_base_scheduled_tasks_item.trigger_user_id|default(omit) }}"
+            days_of_week: "{{ win_base_scheduled_tasks_item.trigger_days_of_week|default(omit) }}"
+            days_of_month: "{{ win_base_scheduled_tasks_item.trigger_days_of_month|default(omit) }}"
+            weeks_of_month: "{{ win_base_scheduled_tasks_item.trigger_weeks_of_month|default(omit) }}"
+            months_of_year: "{{ win_base_scheduled_tasks_item.trigger_months_of_year|default(omit) }}"
+            run_on_last_week_of_month: "{{ win_base_scheduled_tasks_item.trigger_run_on_last_week_of_month|default(omit) }}"
+            weeks_interval: "{{ win_base_scheduled_tasks_item.trigger_weeks_interval|default(omit) }}"
+      register: deploy_scheduled_task_output
+
+  rescue:
+    - debug:
+        msg: "Some error running tasks. If the error coming from the initial run then the task scheduled is not deployed. You need to fix the script and re-run again"
+  always:
+    - debug:
+        var: deploy_scheduled_task_output

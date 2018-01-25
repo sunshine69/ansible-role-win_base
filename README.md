@@ -1,4 +1,4 @@
-Role Name
+win_base
 =========
 
 Install base window system for us.
@@ -7,7 +7,11 @@ This will get common widow packages
 
 - filebeat
 - winlogbeat
-- TBA
+- google-chrome
+
+It also deploy a startup powershell commands and change the password of user
+Administrator from initial_password to the the one defined in inventory
+(ansible_password)
 
 if it is an ec2 instance:
     - ec2 launch
@@ -17,17 +21,20 @@ if it is an ec2 instance:
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+This requires the latest win_scheduled_task module - see
+https://github.com/ansible/ansible/pull/28995
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Please see default/main.yml for now until I document here in details.
+
+`win_base_scheduled_tasks`: a list of dict to define a scheduled tasks we are
+going to deploy in the target hosts.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
 Example Playbook
 ----------------
