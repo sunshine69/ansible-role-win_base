@@ -41,8 +41,8 @@
     src: '{{ powershell_certificate_file_path }}'
     dest: '{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}'
 
-# This requires a custom win_disk_management.py and I forgot where I got it now
-# TODO <find it>
+# This requires a custom win_disk_management.py
+# https://github.com/ansible/ansible/pull/27634
 - name: Set up extra disk storage
   win_disk_management:
     number: "{{ item.number|default(1) }}"
