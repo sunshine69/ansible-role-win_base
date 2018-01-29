@@ -41,6 +41,21 @@
     src: '{{ powershell_certificate_file_path }}'
     dest: '{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}'
 
+# This requires a custom win_disk_management.py
+# https://github.com/ansible/ansible/pull/27634
+- name: Set up extra disk storage
+  win_disk_management:
+    number: "{{ item.number|default(1) }}"
+    partition_style_set: "{{ item.partition_style_set|default('gpt') }}"
+    access_path: "{{ item.access_path|default(omit) }}"
+    drive_letter: "{{ item.drive_letter }}"
+    file_system: "{{ item.file_system|default('ntfs') }}"
+    label: "{{ item.label|default('data'+(item.disk_number|default(1))|string) }}"
+    allocation_unit_size: "{{ item.allocation_unit_size|default(4) }}"
+    large_frs: "{{ item.large_frs|default(omit) }}"
+  with_items: "{{ ec2_volumes[1:] }}"
+  when: ec2_volumes[1:]
+
 - name: Deploy the role ansible setup PS scripts
   win_template:
     dest: '{{ ansible_install_dir }}\win_base-custom-setup.ps1'
