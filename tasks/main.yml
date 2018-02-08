@@ -36,10 +36,11 @@
       set_fact:
         powershell_certificate_file_ext: '{{ powershell_certificate_file_name|splitext|list|last }}'
 
-- name: Install certificate for Powershell
-  win_copy:
-    src: '{{ powershell_certificate_file_path }}'
-    dest: '{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}'
+    - name: Install certificate for Powershell
+      win_copy:
+        src: '{{ powershell_certificate_file_path }}'
+        dest: '{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}'
+  when: powershell_certificate_file_path
 
 # This requires a custom win_disk_management.py
 # https://github.com/ansible/ansible/pull/27634
