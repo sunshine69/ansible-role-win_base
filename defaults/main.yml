@@ -19,7 +19,7 @@ winlogbeat_config:
     level: error
 
 admin_password: "should-be-set-in-inventory"
-powershell_certificate_file_path: "local_cert_file_path_to_copy_to_remote"
+powershell_certificate_file_path: ""
 
 # List of firewall rules to setup. See
 # http://docs.ansible.com/ansible/latest/win_firewall_rule_module.html
