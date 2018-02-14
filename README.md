@@ -32,6 +32,11 @@ Please see default/main.yml for now until I document here in details.
 `win_base_scheduled_tasks`: a list of dict to define a scheduled tasks we are
 going to deploy in the target hosts.
 
+`winrm_certificate_thumbprint` - Optional - No default - The Thumbprint of the (already imported) certificate to be used for WINRM.
+ Usually at this stage the remote box has already run the PS script
+ ConfigureRemotingForAnsible.ps1 thus it would already have a certificate (self
+ signed) for winrm. Using this option to set if you need other cert for it.
+
 Dependencies
 ------------
 

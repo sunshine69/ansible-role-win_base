@@ -19,8 +19,7 @@ winlogbeat_config:
     level: error
 
 admin_password: "should-be-set-in-inventory"
-powershell_certificate_file_path: ""
-
+winrm_certificate_thumbprint: ""
 # List of firewall rules to setup. See
 # http://docs.ansible.com/ansible/latest/win_firewall_rule_module.html
 win_firewall_rules: []
