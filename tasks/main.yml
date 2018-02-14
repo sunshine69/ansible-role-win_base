@@ -25,6 +25,11 @@
   notify: Enable winlogbeat service
   when: logstash_endpoint_list is defined and logstash_endpoint_list
 
+- name: Create directory to store certificates
+  win_file:
+    path: '{{ win_base_certificate_dir }}'
+    state: directory
+
 - name: Copy certificate files needed to import into the remote host
   win_copy:
     src: '{{ item.src }}'
