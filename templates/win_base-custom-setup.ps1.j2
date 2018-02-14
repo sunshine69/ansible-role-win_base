@@ -10,5 +10,4 @@ New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -Certificat
 # touch a file to mark it we reach here. This scripts is meant to run once only.
 echo $null >> {{ ansible_install_dir }}\win_base-custom-setup.hasrun
 
-{% endif %}
 # End section handle certificate import
