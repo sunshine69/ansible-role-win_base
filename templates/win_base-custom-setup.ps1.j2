@@ -1,29 +1,13 @@
 # Certificate section
 # Handle certificate import
-{% if powershell_certificate_file_path %}
-
-{% if powershell_certificate_file_ext in ['.crt'] %}
-
-Write-Host "Import crt certificate into Cert:\LocalMachine\Root"
-$Thumbprint = (Import-Certificate -FilePath "{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}" -CertStoreLocation "Cert:\LocalMachine\Root").Thumbprint
-
-{% elif powershell_certificate_file_ext in ['.pfx'] %}
-
-Write-Host "Import pfx certificate into Cert:\LocalMachine\My"
-$Thumbprint = (Import-PfxCertificate -FilePath "{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}" Cert:\LocalMachine\My).Thumbprint
-
-Write-Host "Remove all previous listeners"
-Remove-Item -Path WSMan:\Localhost\listener\listener* -Recurse
+{% if winrm_certificate_thumbprint %}
 
 Write-Host "Add it to our listener WSMan:\LocalHost\Listener"
-New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $Thumbprint -Force
+New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint "{{ winrm_certificate_thumbprint }}" -Force
 
 {% endif %}
-
-Write-Host Cert Thumbprint: $Thumbprint
 
 # touch a file to mark it we reach here. This scripts is meant to run once only.
 echo $null >> {{ ansible_install_dir }}\win_base-custom-setup.hasrun
 
-{% endif %}
 # End section handle certificate import

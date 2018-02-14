@@ -25,22 +25,29 @@
   notify: Enable winlogbeat service
   when: logstash_endpoint_list is defined and logstash_endpoint_list
 
-# powershell_certificate_file_ext will be used in templates to make a decision
-# if we import the cert only for trust certs or the pfx file which has both key
-# and cert for listener
-- block:
-    - name: Get the powershell_certificate_file_name
-      set_fact:
-        powershell_certificate_file_name: '{{ powershell_certificate_file_path|win_basename }}'
-    - name: Detect cert ext
-      set_fact:
-        powershell_certificate_file_ext: '{{ powershell_certificate_file_name|splitext|list|last }}'
+- name: Create directory to store certificates
+  win_file:
+    path: '{{ win_base_certificate_dir }}'
+    state: directory
 
-    - name: Install certificate for Powershell
-      win_copy:
-        src: '{{ powershell_certificate_file_path }}'
-        dest: '{{ ansible_install_dir }}\{{ powershell_certificate_file_name }}'
-  when: powershell_certificate_file_path
+- name: Copy certificate files needed to import into the remote host
+  win_copy:
+    src: '{{ item.src }}'
+    dest: '{{ win_base_certificate_dir }}\{{ item.src|win_basename }}'
+  with_items: "{{ win_base_certificates }}"
+
+- name: Import/Export certificate
+  win_certificate_store:
+    file_type: "{{ item.file_type|default(omit) }}"
+    key_exportable: "{{ item.key_exportable|default(omit) }}"
+    key_storage: "{{ item.key_storage|default(omit) }}"
+    password: "{{ item.password|default(omit) }}"
+    path: '{{ win_base_certificate_dir }}\{{ item.src|win_basename }}'
+    state: "{{ item.state|default(omit) }}"
+    store_location: "{{ item.store_location|default(omit) }}"
+    store_name: "{{ item.store_name|default(omit) }}"
+    thumbprint: "{{ item.thumbprint|default(omit) }}"
+  with_items: "{{ win_base_certificates }}"
 
 # This requires a custom win_disk_management.py
 # https://github.com/ansible/ansible/pull/27634
