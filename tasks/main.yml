@@ -89,12 +89,12 @@
   win_template:
     dest: '{{ ansible_install_dir }}\win_base-custom-setup.ps1'
     src: 'win_base-custom-setup.ps1.j2'
+  register: win_base_custom_setup_template
 
 - name: Run the custom setup powershell script
   win_command: 'powershell {{ ansible_install_dir }}\win_base-custom-setup.ps1'
-  args:
-    creates: '{{ ansible_install_dir }}\win_base-custom-setup.hasrun'
   ignore_errors: yes
+  when: win_base_custom_setup_template.changed
 
 - block:
     - name: Deploy the content of custom_powershell_commands as remote scripts
