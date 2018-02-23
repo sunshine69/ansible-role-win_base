@@ -32,6 +32,10 @@ Please see default/main.yml for now until I document here in details.
 - `win_base_scheduled_tasks`: a list of dict to define a scheduled tasks we are
 going to deploy in the target hosts.
 
+- `win_base_dirs` - Optional - Default is empty 
+   List of dict describe directories to be created. The key name is the same as parameter name for the ansible module win_file and win_acl. Proper ACL will be set if these keys are provided. 
+
+
 - `winrm_certificate_thumbprint` - Optional - No default - The Thumbprint of the (already imported) certificate to be used for WINRM.
  Usually at this stage the remote box has already run the PS script
  ConfigureRemotingForAnsible.ps1 thus it would already have a certificate (self
