@@ -29,8 +29,12 @@ Role Variables
 
 Please see default/main.yml for now until I document here in details.
 
-`win_base_scheduled_tasks`: a list of dict to define a scheduled tasks we are
+- `win_base_scheduled_tasks`: a list of dict to define a scheduled tasks we are
 going to deploy in the target hosts.
+
+- `win_base_dirs` - Optional - Default is empty 
+   List of dict describe directories to be created. The key name is the same as parameter name for the ansible module win_file and win_acl. Proper ACL will be set if these keys are provided. 
+
 
 Dependencies
 ------------

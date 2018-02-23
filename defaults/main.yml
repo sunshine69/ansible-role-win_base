@@ -27,3 +27,5 @@ win_firewall_rules: []
 # List of scheduled tasks to be deployed. For all sub options see the
 # task/deploy_schedule_tasks.yml
 win_base_scheduled_tasks: []
+# These directories will be created by ansible for preparing the ci deployment scripts
+win_base_dirs: []

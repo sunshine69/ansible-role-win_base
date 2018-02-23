@@ -3,6 +3,24 @@
     path: '{{ ansible_install_dir }}'
     state: directory
 
+- name: Make sure directories in win_base_dirs exist
+  win_file:
+    path: '{{ item.path }}'
+    state: directory
+  with_items: "{{ win_base_dirs }}"
+
+- name: Make sure the directories permissions are set properly in win_base_dirs
+  win_acl:
+    path: "{{ item.path }}"
+    inherit: "{{ item.inherit|default(omit) }}"
+    propagation: "{{ item.propagation|default(omit) }}"
+    rights: "{{ item.rights }}"
+    state: "{{ item.state|default(omit) }}"
+    type: "{{ item.type }}"
+    user: "{{ item.user }}"
+  with_items: "{{ win_base_dirs }}"
+  when: item.rights|default() and item.type|default() and item.user|default()
+
 - set_fact:
     machine_arch: "{{ 'x86' if ansible_env.PROCESSOR_ARCHITECTURE == 'x86' else 'x86_64' }}"
 
