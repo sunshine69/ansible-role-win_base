@@ -33,13 +33,25 @@ Please see default/main.yml for now until I document here in details.
 going to deploy in the target hosts.
 
 - `win_base_dirs` - Optional - Default is empty 
-   List of dict describe directories to be created. The key name is the same as parameter name for the ansible module win_file and win_acl. Proper ACL will be set if these keys are provided. 
+   List of dict describe directories to be created. The key name is the same as
+   parameter name for the ansible module win_file and win_acl. Proper ACL will
+   be set if these keys are provided. 
+   See [win_file](http://docs.ansible.com/ansible/latest/win_file_module.html)
+   Also [win_acl](http://docs.ansible.com/ansible/latest/win_acl_module.html)
+   Example:
+   ```
+   win_base_dirs:
+     path: 'c:\ansible_install'
+     type: deny
+     rights: ExecuteFile,Write
+     user: Fed-Phil
+   ```
 
-
-- `winrm_certificate_thumbprint` - Optional - No default - The Thumbprint of the (already imported) certificate to be used for WINRM.
- Usually at this stage the remote box has already run the PS script
- ConfigureRemotingForAnsible.ps1 thus it would already have a certificate (self
- signed) for winrm. Using this option to set if you need other cert for it.
+- `winrm_certificate_thumbprint` - Optional - No default 
+   The Thumbprint of the (already imported) certificate to be used for WINRM.
+   Usually at this stage the remote box has already run the PS script
+   ConfigureRemotingForAnsible.ps1 thus it would already have a certificate (self
+   signed) for winrm. Using this option to set if you need other cert for it.
 
 - `win_base_certificate_dir` - Optional - Default to `<ansible_install_dir>\ssl`
  The directory in the remote host to store the certificate for import/export
@@ -59,7 +71,8 @@ Dependencies
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Including an example of how to use your role (for instance, with variables
+passed in as parameters) is always nice for users too:
 
     - hosts: servers
       roles:
