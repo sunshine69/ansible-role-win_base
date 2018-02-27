@@ -36,8 +36,11 @@ going to deploy in the target hosts.
    List of dict describe directories to be created. The key name is the same as
    parameter name for the ansible module win_file and win_acl. Proper ACL will
    be set if these keys are provided. 
+
    See [win_file](http://docs.ansible.com/ansible/latest/win_file_module.html)
+
    Also [win_acl](http://docs.ansible.com/ansible/latest/win_acl_module.html)
+
    Example:
    ```
    win_base_dirs:
@@ -64,6 +67,67 @@ going to deploy in the target hosts.
  See http://docs.ansible.com/ansible/devel/module_docs/win_certificate_store_module.html
  Except parameter `path` which will be auto created from `<win_base_certificate_dir>\<current-cert-filename>`
  
+- `ec2_persistent_volumes` - Optional default empty list. 
+   List of Volumes to be formated as second or third disks etc..
+
+   This variables are also be used in the role ec2_persistent_volume to create
+   (if not existed yet) the volume, and role ec2_install to attach at launch
+   time.
+
+   The final list of disks to be managed is 
+   `ec2_volumes[1:] + ec2_persistent_volumes`. 
+   `ec2_volumes` are not persistent however. 
+   
+   Complete Example:
+   ```
+   launch_zone: a
+    ec2_subnet_name: "xvt-{{ vpc_name }}-subnet-{{ role_type }}-{{ launch_zone }}"
+    ec2_volumes:
+	  - device_name: /dev/sda1
+	    volume_type: gp2
+	    volume_size: 50
+	    delete_on_termination: true
+	# Disk D and L are persistent storage.
+	ec2_persistent_volumes_extra_tags_disk1:
+	  Name: "{{ env }}-{{ role_type }}-disk1"
+	  Device: "/dev/xvdf"
+	
+	ec2_persistent_volumes_extra_tags_disk2:
+	  Name: "{{ env }}-{{ role_type }}-disk2"
+	  Device: "/dev/xvdg"
+	
+	# That is for the ec2_persistent_volume to create the volume
+	ec2_persistent_volumes:
+	  - name: "{{ ec2_persistent_volumes_extra_tags_disk1.Name }}"
+	    number: 1
+	    drive_letter: D
+	    label: DATA
+	    volume_type: gp2
+	    volume_size: 100
+	    delete_on_termination: false
+	    encrypted: true
+	    tags: "{{ ec2_instance_base_tags|combine(ec2_persistent_volumes_extra_tags_disk1) }}"
+	    zone: "{{ region }}{{ launch_zone }}"
+	  - name: "{{ ec2_persistent_volumes_extra_tags_disk2.Name }}"
+	    number: 2
+	    drive_letter: L
+	    label: LOG
+	    volume_type: gp2
+	    volume_size: 100
+	    delete_on_termination: false
+	    encrypted: true
+	    tags: "{{ ec2_instance_base_tags|combine(ec2_persistent_volumes_extra_tags_disk2) }}"
+	    zone: "{{ region }}{{ launch_zone }}"
+	
+	# This is for the ec2_instance to attach the persistent vol to the instance.
+	ec2_instance_persistent_vol_tags:
+	  Name: "{{ env }}-{{ role_type }}"
+	  Application: "{{ role_type }}"
+	  Environment: "{{ env }}"
+
+   ```
+
+
 Dependencies
 ------------
 
