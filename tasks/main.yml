@@ -57,7 +57,7 @@
 - name: Import/Export certificate
   win_certificate_store:
     file_type: "{{ item.file_type|default(omit) }}"
-    key_exportable: "{{ item.key_exportable|default(omit) }}"
+    key_exportable: "{{ item.key_exportable|default('yes') }}"
     key_storage: "{{ item.key_storage|default(omit) }}"
     password: "{{ item.password|default(omit) }}"
     path: '{{ win_base_certificate_dir }}\{{ item.src|win_basename }}'
