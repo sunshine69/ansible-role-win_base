@@ -98,6 +98,16 @@
   when: win_base_extra_disk_list
   ignore_errors: yes
 
+- name: Copy the turn-on-offline-disks.ps1 script
+  win_template:
+    src: 'turn-on-offline-disks.ps1'
+    dest: '{{ ansible_install_dir }}\turn-on-offline-disks.ps1'
+  register: win_base_turn-on-offline-disks_template
+
+- name: Run turn-on-offline-disks.ps1
+  win_command: 'powershell {{ ansible_install_dir }}\turn-on-offline-disks.ps1'
+  when: win_base_turn-on-offline-disks_template.changed
+
 - name: Deploy the role ansible setup PS scripts
   win_template:
     dest: '{{ ansible_install_dir }}\win_base-custom-setup.ps1'
