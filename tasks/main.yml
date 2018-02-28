@@ -66,6 +66,7 @@
     store_name: "{{ item.store_name|default(omit) }}"
     thumbprint: "{{ item.thumbprint|default(omit) }}"
   with_items: "{{ win_base_certificates }}"
+  no_log: True
 
 # This requires a custom win_disk_management.py
 # https://github.com/ansible/ansible/pull/27634
@@ -158,6 +159,7 @@
     state: present
     update_password: always
   ignore_errors: yes
+  no_log: True
   when: initial_password is defined and initial_password
 
 - name: Change ansible admin password
