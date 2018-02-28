@@ -66,7 +66,14 @@
     store_name: "{{ item.store_name|default(omit) }}"
     thumbprint: "{{ item.thumbprint|default(omit) }}"
   with_items: "{{ win_base_certificates }}"
+  when: not item.use_powershell|default()
   no_log: True
+
+- include_tasks: "import-certs-use-powershell.yml"
+  with_items: "{{ win_base_certificates }}"
+  when: cert_item.use_powershell|default()
+  loop_control:
+    loop_var: cert_item
 
 # This requires a custom win_disk_management.py
 # https://github.com/ansible/ansible/pull/27634

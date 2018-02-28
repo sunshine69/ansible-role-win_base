@@ -1,0 +1,19 @@
+# We do import certificate directly using powershell for these items that has
+# the field use_powershell if defined and true. The issues is that for
+# xvt.technology certificate the ansible win_certificate_store does import
+# properly but for some reason it is marked as un-exportable no matter the
+# param key_exportable is set. The result is that I can not attach it to IIS
+# SSL website because of error reported in here
+# https://knowledge.geotrust.com/support/knowledge-base/index?page=content&id=SO22115&actp=search&viewlocale=en_US&searchid=1435162914930.
+# However using powershell import directly like below works.
+
+# Only support pfx file format for now and with password encrypted
+
+- name: Import certificate directly using powershell - Deploy the script
+  win_copy:
+    content: |
+      $password = ConvertTo-SecureString "{{ cert_item.password }}" -AsPlainText -Force
+      Import-PfxCertificate -Exportable -Password $password -CertStoreLocation Cert:\LocalMachine\My -FilePath '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
+    dest: '{{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
+- name: Run the script
+  win_command: 'powershell {{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
