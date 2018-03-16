@@ -10,13 +10,11 @@
 # Only support pfx file format for now and with password encrypted
 
 - name: Import certificate directly using powershell - Deploy the script
-  win_copy:
-    content: |
-      $password = ConvertTo-SecureString "{{ cert_item.password }}" -AsPlainText -Force
-      Import-PfxCertificate -Exportable -Password $password -CertStoreLocation Cert:\LocalMachine\My -FilePath '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
-    dest: '{{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
-  register: win_base_cert_import_script_template
+  win_shell: |
+    $password = ConvertTo-SecureString "{{ cert_item.password }}" -AsPlainText -Force
+    Import-PfxCertificate -Exportable -Password $password -CertStoreLocation Cert:\LocalMachine\My -FilePath '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
+  when: "{{ cert_item.password|default() }}"
 
-- name: Run the script
-  win_command: 'powershell {{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
-  when: win_base_cert_import_script_template.changed
+- name: Import passwordless certificate directly using powershell - Deploy the script
+  win_shell: Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
+  when: "{{ not cert_item.password|default() }}"
