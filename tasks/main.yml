@@ -200,8 +200,3 @@
   when: initial_password is defined and initial_password
   vars:
     ansible_connection: local
-
-- pause:
-    prompt: "You need to restart the machine to apply the regional settings. Go and reboot the machine manually. I will wait for 15 minutes"
-    minutes: 15
-  when: region_setting_result.restart_required

@@ -30,3 +30,6 @@ win_firewall_rules: []
 win_base_scheduled_tasks: []
 # These directories will be created by ansible for preparing the ci deployment scripts
 win_base_dirs: []
+
+# List of packages to install by URL
+win_base_package_urls: []
