@@ -101,16 +101,19 @@
       when: win_base_extra_disk_list
       ignore_errors: yes
 
+      # TODO - this doesn't work for 
     - name: Copy the turn-on-offline-disks.ps1 script
       win_template:
         src: 'turn-on-offline-disks.ps1'
         dest: '{{ ansible_install_dir }}\turn-on-offline-disks.ps1'
       register: win_base_turn_on_offline_disks_template
+      ignore_errors: yes
+
 
     - name: Run turn-on-offline-disks.ps1
       win_command: 'powershell {{ ansible_install_dir }}\turn-on-offline-disks.ps1'
       when: win_base_turn_on_offline_disks_template.changed
-  when: ec2_volumes|default([])
+  when: ec2_volumes|default([])|length > 1
 
 - name: Deploy the role ansible setup PS scripts
   win_template:
@@ -200,3 +203,23 @@
   when: initial_password is defined and initial_password
   vars:
     ansible_connection: local
+
+- name: create tempdir
+  win_tempfile:
+    state: directory
+  register: tempdir
+
+- name: download packages
+  win_get_url:
+    url: "{{ item.url }}"
+    dest: "{{ tempdir.path }}"
+  with_items: "{{ win_base_package_urls }}"
+
+- name: install packages
+  win_package:
+    path: '{{ tempdir.path }}\{{ item.url|basename }}'
+    #creates_path: "{{ item.creates_path|default(omit) }}"
+    #creates_version: "{{ item.creates_version|default(omit) }}"
+    #creates_service: "{{ item.creates_service|default(omit) }}"
+    #product_id: "{{ item.product_id|default(omit) }}"
+  with_items: "{{ win_base_package_urls }}"
