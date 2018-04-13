@@ -1,6 +1,8 @@
 ---
 # defaults file for win_base
 chocolatey_lib_path: 'c:\ProgramData\chocolatey\lib'
+chocolatey_pkgs: "{{ chocolatey_base_pkgs|default([]) + chocolatey_extra_pkgs|default([]) }}"
+
 ansible_install_dir: 'c:\ansible_install'
 
 winlogbeat_config:

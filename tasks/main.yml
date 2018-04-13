@@ -1,3 +1,9 @@
+- name: Install chocolatey pkgs
+  win_chocolatey:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ chocolatey_pkgs }}"
+
 - name: Make sure ansible-install dir exist
   win_file:
     path: '{{ ansible_install_dir }}'
