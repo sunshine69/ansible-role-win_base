@@ -72,6 +72,7 @@
 - include_tasks: "import-certs-use-powershell.yml"
   with_items: "{{ win_base_certificates }}"
   when: cert_item.use_powershell|default()
+  no_log: True
   loop_control:
     loop_var: cert_item
 
