@@ -13,8 +13,8 @@
   win_shell: |
     $password = ConvertTo-SecureString "{{ cert_item.password }}" -AsPlainText -Force
     Import-PfxCertificate -Exportable -Password $password -CertStoreLocation Cert:\LocalMachine\My -FilePath '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
-  when: "{{ cert_item.password|default() }}"
+  when: "{{ (cert_item.password|default())|bool }}"
 
 - name: Import passwordless certificate directly using powershell - Deploy the script
   win_shell: Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
-  when: "{{ not cert_item.password|default() }}"
+  when: "{{ not (cert_item.password|default())|bool }}"
