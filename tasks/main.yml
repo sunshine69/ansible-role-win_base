@@ -72,6 +72,7 @@
 - include_tasks: "import-certs-use-powershell.yml"
   with_items: "{{ win_base_certificates }}"
   when: cert_item.use_powershell|default()
+  no_log: True
   loop_control:
     loop_var: cert_item
 
@@ -182,6 +183,16 @@
   no_log: True
   when: initial_password is defined and initial_password
 
+# https://msdn.microsoft.com/en-us/library/dd374073.aspx for the win_location
+# value mapping to country
+- name: Update regional settings
+  win_region:
+    format: "{{ win_culture|default('en-AU') }}"
+    unicode_language: "{{ win_unicode_language|default('en-AU') }}"
+    location: "{{ win_location|default(12) }}"
+    copy_settings: True
+  register: region_setting_result
+
 - name: Change ansible admin password
   set_fact:
     ansible_password: "{{ admin_password }}"
@@ -189,3 +200,8 @@
   when: initial_password is defined and initial_password
   vars:
     ansible_connection: local
+
+- pause:
+    prompt: "You need to restart the machine to apply the regional settings. Go and reboot the machine manually. I will wait for 15 minutes"
+    minutes: 15
+  when: region_setting_result.restart_required
