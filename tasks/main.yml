@@ -1,5 +1,24 @@
+- name: Make sure ansible-install dir exist
+  win_file:
+    path: '{{ ansible_install_dir }}'
+    state: directory
+
 - name: Install chocolatey
   win_shell: "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+
+# Ansible bug? Happen with all version basically can not do string concat with
+# backslash
+
+- set_fact:
+    ansible_install_dir_with_backslash: >
+      {{ ansible_install_dir }}\
+
+- name: Download dependencies install files for chocolatey packages
+  win_get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.savepath|default(ansible_install_dir_with_backslash|trim + item.url|basename) }}"
+  with_items: "{{ chocolatey_pkgs }}"
+  when: item.url|default()
 
 - name: Install chocolatey pkgs
   win_chocolatey:
@@ -20,11 +39,8 @@
     params: "{{ item.params|default(omit) }}"
     timeout: "{{ item.timeout|default(omit) }}"
   with_items: "{{ chocolatey_pkgs }}"
+  when: not item.download_only|default(False)
 
-- name: Make sure ansible-install dir exist
-  win_file:
-    path: '{{ ansible_install_dir }}'
-    state: directory
 
 - name: Make sure directories in win_base_dirs exist
   win_file:
