@@ -152,7 +152,7 @@
           win_command: 'powershell {{ ansible_install_dir }}\turn-on-offline-disks.ps1'
           when: win_base_turn_on_offline_disks_template.changed
           ignore_errors: yes
-  when: ec2_volumes|default([])|length > 1
+  when: ec2_volumes|default([])|length == 1
 
 - name: Deploy the role ansible setup PS scripts
   win_template:
