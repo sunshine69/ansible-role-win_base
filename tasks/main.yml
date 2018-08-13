@@ -3,6 +3,45 @@
     path: '{{ ansible_install_dir }}'
     state: directory
 
+- name: Install chocolatey
+  win_shell: "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+
+# Ansible bug? Happen with all version basically can not do string concat with
+# backslash
+
+- set_fact:
+    ansible_install_dir_with_backslash: >
+      {{ ansible_install_dir }}\
+
+- name: Download dependencies install files for chocolatey packages
+  win_get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.savepath|default(ansible_install_dir_with_backslash|trim + item.url|basename) }}"
+  with_items: "{{ chocolatey_pkgs }}"
+  when: item.url|default()
+
+- name: Install chocolatey pkgs
+  win_chocolatey:
+    name: "{{ item.name }}"
+    state: "{{ item.state|default('present') }}"
+    version: "{{ item.version|default(omit) }}"
+    source: "{{ item.source|default(omit) }}"
+    skip_scripts: "{{ item.skip_scripts|default(omit) }}"
+    proxy_url: "{{ item.proxy_url|default(omit) }}"
+    proxy_username: "{{ item.proxy_username|default(omit) }}"
+    proxy_password: "{{ item.proxy_password|default(omit) }}"
+    install_args: "{{ item.install_args|default(omit) }}"
+    ignore_dependencies: "{{ item.ignore_dependencies|default(omit) }}"
+    ignore_checksums: "{{ item.ignore_checksums|default(omit) }}"
+    force: "{{ item.force|default(omit) }}"
+    allow_prerelease: "{{ item.allow_prerelease|default(omit) }}"
+    allow_empty_checksums: "{{ item.allow_empty_checksums|default(omit) }}"
+    params: "{{ item.params|default(omit) }}"
+    timeout: "{{ item.timeout|default(omit) }}"
+  with_items: "{{ chocolatey_pkgs }}"
+  when: not item.download_only|default(False)
+
+
 - name: Make sure directories in win_base_dirs exist
   win_file:
     path: '{{ item.path }}'
@@ -101,16 +140,19 @@
       when: win_base_extra_disk_list
       ignore_errors: yes
 
-    - name: Copy the turn-on-offline-disks.ps1 script
-      win_template:
-        src: 'turn-on-offline-disks.ps1'
-        dest: '{{ ansible_install_dir }}\turn-on-offline-disks.ps1'
-      register: win_base_turn_on_offline_disks_template
+    - block:
+        # TODO - this doesn't work for
+        - name: Copy the turn-on-offline-disks.ps1 script
+          win_template:
+            src: 'turn-on-offline-disks.ps1'
+            dest: '{{ ansible_install_dir }}\turn-on-offline-disks.ps1'
+          register: win_base_turn_on_offline_disks_template
 
-    - name: Run turn-on-offline-disks.ps1
-      win_command: 'powershell {{ ansible_install_dir }}\turn-on-offline-disks.ps1'
-      when: win_base_turn_on_offline_disks_template.changed
-  when: ec2_volumes|default([])
+        - name: Run turn-on-offline-disks.ps1
+          win_command: 'powershell {{ ansible_install_dir }}\turn-on-offline-disks.ps1'
+          when: win_base_turn_on_offline_disks_template.changed
+          ignore_errors: yes
+  when: ec2_volumes|default([])|length == 1
 
 - name: Deploy the role ansible setup PS scripts
   win_template:
@@ -164,6 +206,36 @@
     description: "{{ item.description }}"
   with_items: "{{ win_firewall_rules|default([]) }}"
 
+# https://msdn.microsoft.com/en-us/library/dd374073.aspx for the win_location
+# value mapping to country
+- name: Update regional settings
+  win_region:
+    format: "{{ win_culture|default('en-AU') }}"
+    unicode_language: "{{ win_unicode_language|default('en-AU') }}"
+    location: "{{ win_location|default(12) }}"
+    copy_settings: True
+  register: region_setting_result
+
+- name: create tempdir
+  win_tempfile:
+    state: directory
+  register: tempdir
+
+- name: download packages
+  win_get_url:
+    url: "{{ item.url }}"
+    dest: "{{ tempdir.path }}"
+  with_items: "{{ win_base_package_urls }}"
+
+- name: install packages
+  win_package:
+    path: '{{ tempdir.path }}\{{ item.url|basename }}'
+    creates_path: "{{ item.creates_path|default(omit) }}"
+    creates_version: "{{ item.creates_version|default(omit) }}"
+    creates_service: "{{ item.creates_service|default(omit) }}"
+    product_id: "{{ item.product_id|default(omit) }}"
+  with_items: "{{ win_base_package_urls }}"
+
 # This seems to be window bug. I use this ansible module or my own PS script to
 # set password it always return InvalidCredentialsError but the password is
 # actually changed.
@@ -182,16 +254,6 @@
   ignore_errors: yes
   no_log: True
   when: initial_password is defined and initial_password
-
-# https://msdn.microsoft.com/en-us/library/dd374073.aspx for the win_location
-# value mapping to country
-- name: Update regional settings
-  win_region:
-    format: "{{ win_culture|default('en-AU') }}"
-    unicode_language: "{{ win_unicode_language|default('en-AU') }}"
-    location: "{{ win_location|default(12) }}"
-    copy_settings: True
-  register: region_setting_result
 
 - name: Change ansible admin password
   set_fact:
