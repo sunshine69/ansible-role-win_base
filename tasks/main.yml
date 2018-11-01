@@ -150,7 +150,7 @@
 
         - name: Run turn-on-offline-disks.ps1
           win_command: 'powershell {{ ansible_install_dir }}\turn-on-offline-disks.ps1'
-          when: win_base_turn_on_offline_disks_template.changed
+          when: win_base_turn_on_offline_disks_template.changed or force_reset_disks|default()
           ignore_errors: yes
   when: ec2_volumes|default([])|length == 1
 
