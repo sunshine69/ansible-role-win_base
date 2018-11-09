@@ -58,6 +58,13 @@
     groups: "{{ ['Users'] + item.groups|default([]) }}"
   with_items: "{{ win_base_local_users|default([]) }}"
 
+- name: Ensure user's right properly setup
+  win_user_right:
+    name: "{{ item.name }}"
+    users: "{{ item.users }}"
+    action: "{{ item.action }}"
+  with_items: "{{ win_user_rights|default([]) }}"
+
 - name: Make sure directories in win_base_dirs exist
   win_file:
     path: '{{ item.path }}'

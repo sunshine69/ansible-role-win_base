@@ -38,3 +38,7 @@ win_base_package_urls: []
 # Local users to create. Have field name the same as the ansible module
 # `win_user` accepts
 win_base_local_users: []
+
+# List of right name, users list and action. Is used by ansible module
+# win_user_right to setup user's right
+win_user_rights: []

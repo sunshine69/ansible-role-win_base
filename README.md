@@ -77,6 +77,22 @@ going to deploy in the target hosts.
   `win_user`
   Requires at least two field, `name` and `password`
 
+- `win_user_rights` -  List of right name, users list and action. Is used by
+  ansible module `win_user_right` to setup user's right.
+  See [here](https://docs.ansible.com/ansible/2.4/win_user_right_module.html)
+  for more info.
+
+Example:
+
+```
+win_user_rights:
+  - name: SeServiceLogonRight
+    users:
+      - userA
+      - userB
+    action: add
+```
+
 - `ec2_persistent_volumes` - Optional default empty list.
    List of Volumes to be formated as second or third disks etc..
 
