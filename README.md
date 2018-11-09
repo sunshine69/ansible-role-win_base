@@ -16,7 +16,7 @@ Administrator from initial_password to the the one defined in inventory
 if it is an ec2 instance:
     - ec2 launch
     - TBA
-    
+
 
 Requirements
 ------------
@@ -32,10 +32,10 @@ Please see default/main.yml for now until I document here in details.
 - `win_base_scheduled_tasks`: a list of dict to define a scheduled tasks we are
 going to deploy in the target hosts.
 
-- `win_base_dirs` - Optional - Default is empty 
+- `win_base_dirs` - Optional - Default is empty
    List of dict describe directories to be created. The key name is the same as
    parameter name for the ansible module win_file and win_acl. Proper ACL will
-   be set if these keys are provided. 
+   be set if these keys are provided.
 
    See [win_file](http://docs.ansible.com/ansible/latest/win_file_module.html)
 
@@ -50,7 +50,7 @@ going to deploy in the target hosts.
      user: Fed-Phil
    ```
 
-- `winrm_certificate_thumbprint` - Optional - No default 
+- `winrm_certificate_thumbprint` - Optional - No default
    The Thumbprint of the (already imported) certificate to be used for WINRM.
    Usually at this stage the remote box has already run the PS script
    ConfigureRemotingForAnsible.ps1 thus it would already have a certificate (self
@@ -71,6 +71,11 @@ going to deploy in the target hosts.
   Each item must contain a `url` key, and optionally `creates_path`, `creates_service`,
   `creates_version` and `product_id` keys which correspond to the keys used by
   the `win_package` mdoule
+
+- `win_base_local_users`
+  A list of local users to create. Field name is the same as the ansible module
+  `win_user`
+  Requires at least two field, `name` and `password`
 
 - `ec2_persistent_volumes` - Optional default empty list.
    List of Volumes to be formated as second or third disks etc..
