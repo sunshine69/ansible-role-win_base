@@ -41,6 +41,22 @@
   with_items: "{{ chocolatey_pkgs }}"
   when: not item.download_only|default(False)
 
+- name: Ensure local account user is present
+  win_user:
+    name: "{{ item.name }}"
+    fullname: "{{ item.fullname|default(omit) }}"
+    account_disabled: "{{ item.account_disabled|default(omit) }}"
+    account_locked: "{{ item.account_locked|default(omit) }}"
+    description: "{{ item.description|default(omit) }}"
+    groups_action: "{{ item.groups_action|default(omit) }}"
+    password_expired: "{{ item.password_expired|default(omit) }}"
+    password_never_expires: "{{ item.password_never_expires|default('yes') }}"
+    update_password: "{{ item.update_password|default(omit) }}"
+    user_cannot_change_password: "{{ item.user_cannot_change_password|default(omit) }}"
+    password: "{{ item.password }}"
+    state: present
+    groups: "{{ ['Users'] + item.groups|default([]) }}"
+  with_items: "{{ win_base_local_users|default([]) }}"
 
 - name: Make sure directories in win_base_dirs exist
   win_file:
