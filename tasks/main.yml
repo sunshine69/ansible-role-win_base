@@ -100,9 +100,9 @@
   notify: Enable winlogbeat service
   when: logstash_endpoint_list is defined and logstash_endpoint_list
 
-- name: Install google-chrome to make our life easier
+- name: Install firefox browser to make our life easier
   win_chocolatey:
-    name: googlechrome
+    name: firefox
     state: present
 
 - name: Create directory to store certificates
