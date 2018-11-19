@@ -41,6 +41,11 @@
   with_items: "{{ chocolatey_pkgs }}"
   when: not item.download_only|default(False)
 
+- include_tasks: install_msi_mods.yml
+  with_items: "{{ win_base_msi_pkgs|default([]) }}"
+  loop_control:
+    loop_var: task_item
+
 - name: Ensure local account user is present
   win_user:
     name: "{{ item.name }}"
