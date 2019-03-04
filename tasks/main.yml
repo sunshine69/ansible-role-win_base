@@ -62,6 +62,7 @@
     state: present
     groups: "{{ ['Users'] + item.groups|default([]) }}"
   with_items: "{{ win_base_local_users|default([]) }}"
+  no_log: no_log|default(True)
 
 - name: Ensure user's right properly setup
   win_user_right:
@@ -69,6 +70,7 @@
     users: "{{ item.users }}"
     action: "{{ item.action }}"
   with_items: "{{ win_user_rights|default([]) }}"
+  no_log: no_log|default(True)
 
 - name: Make sure directories in win_base_dirs exist
   win_file:
@@ -134,12 +136,12 @@
     thumbprint: "{{ item.thumbprint|default(omit) }}"
   with_items: "{{ win_base_certificates }}"
   when: not item.use_powershell|default()
-  no_log: True
+  no_log: no_log|default(True)
 
 - include_tasks: "import-certs-use-powershell.yml"
   with_items: "{{ win_base_certificates }}"
   when: cert_item.use_powershell|default()
-  no_log: True
+  no_log: no_log|default(True)
   loop_control:
     loop_var: cert_item
 
@@ -280,13 +282,13 @@
     state: present
     update_password: always
   ignore_errors: yes
-  no_log: True
+  no_log: no_log|default(True)
   when: initial_password is defined and initial_password
 
 - name: Change ansible admin password
   set_fact:
     ansible_password: "{{ admin_password }}"
-  no_log: True
+  no_log: no_log|default(True)
   when: initial_password is defined and initial_password
   vars:
     ansible_connection: local
