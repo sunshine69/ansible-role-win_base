@@ -9,6 +9,22 @@
 
 # Only support pfx file format for now and with password encrypted
 
+- name: Copy certificate files needed to import into the remote host from local
+  win_copy:
+    src: '{{ cert_item.src }}'
+    dest: '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
+  when: not (cert_item.src is search('^http[s]*:\/\/'))
+
+# These publicly pfx file should be be encrypted
+- name: Copy certificate files needed to import into the remote host from https
+  win_get_url:
+    url: '{{ cert_item.src }}'
+    dest: '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
+  when: cert_item.src is search('^http[s]*:\/\/')
+
+- include_tasks: upload-certs-from-s3.yml
+  when: cert_item.src|urlsplit('scheme') == 's3'
+
 - block:
     - name: Import pfx certificate directly using powershell - Deploy the script
       win_copy:

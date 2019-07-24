@@ -2,13 +2,12 @@
   aws_s3:
     profile: "{{ profile|default(omit) }}"
     region: "{{ region }}"
-    bucket: '{{ task_item.src|urlsplit("hostname") }}'
-    object: '{{ task_item.src|urlsplit("path") }}'
+    bucket: '{{ cert_item.src|urlsplit("hostname") }}'
+    object: '{{ cert_item.src|urlsplit("path") }}'
     mode: geturl
-  with_items: "{{ win_base_certificates }}"
   register: s3_out
 
 - name: Copy certificate files needed to import into the remote host from s3
   win_get_url:
     url: '{{ s3_out.url }}'
-    dest: '{{ win_base_certificate_dir }}\{{ task_item.src|win_basename }}'
+    dest: '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'

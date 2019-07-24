@@ -117,26 +117,12 @@
     path: '{{ win_base_certificate_dir }}'
     state: directory
 
-- name: Copy certificate files needed to import into the remote host from local
-  win_copy:
-    src: '{{ item.src }}'
-    dest: '{{ win_base_certificate_dir }}\{{ item.src|win_basename }}'
+- include_tasks: "import-certs-use-powershell.yml"
   with_items: "{{ win_base_certificates }}"
-  when: not (item.src is search('^http[s]*:\/\/'))
-
-# These publicly pfx file should be be encrypted
-- name: Copy certificate files needed to import into the remote host from https
-  win_get_url:
-    url: '{{ item.src }}'
-    dest: '{{ win_base_certificate_dir }}\{{ item.src|win_basename }}'
-  with_items: "{{ win_base_certificates }}"
-  when: item.src is search('^http[s]*:\/\/')
-
-- include_tasks: upload-certs-from-s3.yml
-  when: task_item.src|urlsplit('scheme') == 's3'
-  with_items: "{{ win_base_certificates }}"
+  when: cert_item.use_powershell|default(True)
+  no_log: True
   loop_control:
-    loop_var: task_item
+    loop_var: cert_item
 
 - name: Import/Export certificate
   win_certificate_store:
@@ -152,14 +138,6 @@
   with_items: "{{ win_base_certificates }}"
   when: not item.use_powershell|default()
   no_log: True
-
-- include_tasks: "import-certs-use-powershell.yml"
-  with_items: "{{ win_base_certificates }}"
-  when: cert_item.use_powershell|default()
-  no_log: True
-  loop_control:
-    loop_var: cert_item
-
 
 - block:
     - name: set fact win_base_extra_disk_list
