@@ -1,0 +1,14 @@
+- name: Authenticate with s3 and get the download URL
+  aws_s3:
+    profile: "{{ profile|default(omit) }}"
+    region: "{{ region }}"
+    bucket: '{{ cert_item.src|urlsplit("hostname") }}'
+    object: '{{ cert_item.src|urlsplit("path") }}'
+    mode: geturl
+  register: s3_out
+  delegate_to: localhost
+
+- name: Copy certificate files needed to import into the remote host from s3
+  win_get_url:
+    url: '{{ s3_out.url }}'
+    dest: '{{ win_base_certificate_dir }}\{{ cert_item.src|win_basename }}'
