@@ -9,6 +9,9 @@
 
 # Only support pfx file format for now and with password encrypted
 
+# The ansible fact var having the certificate_file_name_replace . and - with _ + '_hash' will be set to the thumbprint hash
+
+
 - name: Copy certificate files needed to import into the remote host from local
   win_copy:
     src: '{{ cert_item.src }}'
@@ -29,15 +32,17 @@
     - name: Import pfx certificate directly using powershell - Deploy the script
       win_copy:
         content: |
-          $password = ConvertTo-SecureString "{{ cert_item.password }}" -AsPlainText -Force
-          Import-PfxCertificate -Exportable -Password $password -CertStoreLocation '{{ cert_item.cert_store_location|default("Cert:\LocalMachine\My") }}' -FilePath '{{ win_base_certificate_dir|default("c:\ansible_install\ssl") }}\{{ cert_item.src|win_basename }}'
+          $password = ConvertTo-SecureString "{{ cert_item.password }}" -AsPlainText -Force 2>&1
+          $imported_cert = Import-PfxCertificate -Exportable -Password $password -CertStoreLocation '{{ cert_item.cert_store_location|default("Cert:\LocalMachine\My") }}' -FilePath '{{ win_base_certificate_dir|default("c:\ansible_install\ssl") }}\{{ cert_item.src|win_basename }}' 2>&1
+          if ($imported_cert) { "{0}" -f $imported_cert.Thumbprint }
         dest: '{{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
       when: cert_item.password|default()
 
     - name: Import passwordless pfx certificate directly using powershell - Deploy the script
       win_copy:
         content: |
-          Import-PfxCertificate -Exportable -CertStoreLocation '{{ cert_item.cert_store_location|default("Cert:\LocalMachine\My") }}' -FilePath '{{ win_base_certificate_dir|default("c:\ansible_install\ssl") }}\{{ cert_item.src|win_basename }}'
+          $imported_cert = Import-PfxCertificate -Exportable -CertStoreLocation '{{ cert_item.cert_store_location|default("Cert:\LocalMachine\My") }}' -FilePath '{{ win_base_certificate_dir|default("c:\ansible_install\ssl") }}\{{ cert_item.src|win_basename }}' 2>&1
+          if ($imported_cert) { "{0}" -f $imported_cert.Thumbprint }
         dest: '{{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
       when: not cert_item.password|default()
   when: cert_item.src|win_basename is search('\.pfx$')
@@ -46,9 +51,14 @@
     - name: Import non pfx certificate directly using powershell - Deploy the script
       win_copy:
         content: |
-          Import-Certificate -CertStoreLocation '{{ cert_item.cert_store_location|default("Cert:\LocalMachine\My") }}' -FilePath '{{ win_base_certificate_dir|default("c:\ansible_install\ssl") }}\{{ cert_item.src|win_basename }}'
+          $imported_cert = Import-Certificate -CertStoreLocation '{{ cert_item.cert_store_location|default("Cert:\LocalMachine\My") }}' -FilePath '{{ win_base_certificate_dir|default("c:\ansible_install\ssl") }}\{{ cert_item.src|win_basename }}' 2>&1
+          if ($imported_cert) { "{0}" -f $imported_cert.Thumbprint }
         dest: '{{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
   when: not (cert_item.src|win_basename is search('\.pfx$'))
 
 - name: Run powershell to import {{ cert_item.src|win_basename }}
   win_shell: 'powershell {{ ansible_install_dir }}\import-{{ cert_item.src|win_basename }}.ps1'
+  register: cert_out
+
+- name: Setfact to output the cert hash
+  set_fact: {'{{ cert_item.src|win_basename|replace("-","_")|replace(".","_") }}_hash': '{{ cert_out.stdout|trim }}' }
