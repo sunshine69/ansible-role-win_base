@@ -3,19 +3,12 @@ win_base
 
 Install base window system for us.
 
-This will get common widow packages
-
-- filebeat
-- winlogbeat
-- google-chrome
-
 It also deploy a startup powershell commands and change the password of user
 Administrator from initial_password to the the one defined in inventory
 (ansible_password)
 
 if it is an ec2 instance:
     - ec2 launch
-    - TBA
 
 
 Requirements
@@ -156,6 +149,8 @@ win_user_rights:
 
 Dependencies
 ------------
+
+Your hosts should have been setup to allow ansible to work. See [this](https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html) for how to create a WinRM listner. Also the authentication requirements for [WinRM](https://docs.ansible.com/ansible/latest/user_guide/windows_winrm.html).
 
 
 Example Playbook

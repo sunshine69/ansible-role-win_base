@@ -5,6 +5,9 @@ chocolatey_pkgs: "{{ chocolatey_base_pkgs|default([]) + chocolatey_extra_pkgs|de
 
 ansible_install_dir: 'c:\ansible_install'
 
+enable_firefox: false
+
+enable_winlogbeat: false
 winlogbeat_config:
   winlogbeat:
     event_logs:
@@ -42,3 +45,5 @@ win_base_local_users: []
 # List of right name, users list and action. Is used by ansible module
 # win_user_right to setup user's right
 win_user_rights: []
+
+logstash_endpoint_list: []

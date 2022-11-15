@@ -98,19 +98,20 @@
     name: winlogbeat
     state: present
     version: "{{ winlogbeat_version }}"
-  when: logstash_endpoint_list is defined and logstash_endpoint_list
+  when: enable_winlogbeat is defined and enable_winlogbeat
 
 - name: Deploy winlogbeat config
   win_template:
     src: "winlogbeat.yml"
     dest: '{{ chocolatey_lib_path }}\winlogbeat\tools\winlogbeat-{{ winlogbeat_version }}-windows-{{ machine_arch }}\winlogbeat.yml'
   notify: Enable winlogbeat service
-  when: logstash_endpoint_list is defined and logstash_endpoint_list
+  when: enable_winlogbeat is defined and enable_winlogbeat
 
 - name: Install firefox browser to make our life easier
   win_chocolatey:
     name: firefox
     state: present
+  when: enable_firefox is defined and enable_firefox
 
 - name: Create directory to store certificates
   win_file:
@@ -161,7 +162,7 @@
         large_frs: "{{ item.large_frs|default(omit) }}"
       with_items: "{{ win_base_extra_disk_list }}"
       when: win_base_extra_disk_list
-      ignore_errors: yes
+      ignore_errors: true
 
     - block:
         # TODO - this doesn't work for
@@ -174,7 +175,7 @@
         - name: Run turn-on-offline-disks.ps1
           win_command: 'powershell {{ ansible_install_dir }}\turn-on-offline-disks.ps1'
           when: win_base_turn_on_offline_disks_template.changed or force_reset_disks|default()
-          ignore_errors: yes
+          ignore_errors: true
   when: ec2_volumes|default([])|length == 1
 
 - name: Deploy the role ansible setup PS scripts
@@ -185,7 +186,7 @@
 
 - name: Run the custom setup powershell script
   win_command: 'powershell {{ ansible_install_dir }}\win_base-custom-setup.ps1'
-  ignore_errors: yes
+  ignore_errors: true
   when: win_base_custom_setup_template.changed
 
 - block:
@@ -274,7 +275,7 @@
     password: "{{ admin_password }}"
     state: present
     update_password: always
-  ignore_errors: yes
+  ignore_errors: true
   no_log: True
   when: initial_password is defined and initial_password
 
