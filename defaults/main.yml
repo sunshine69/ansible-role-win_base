@@ -1,8 +1,12 @@
 ---
 # defaults file for win_base
 chocolatey_lib_path: 'c:\ProgramData\chocolatey\lib'
+# See the main.yml for item field names accepted by win_chocolatey module
 chocolatey_pkgs: "{{ chocolatey_base_pkgs|default([]) + chocolatey_extra_pkgs|default([]) }}"
 
+win_base_msi_pkgs: []
+
+# All of temporary resource will be deployed into the dir like certficates, custom ps scripts etc
 ansible_install_dir: 'c:\ansible_install'
 
 enable_firefox: false
@@ -23,12 +27,20 @@ winlogbeat_config:
     to_syslog: true
     level: error
 
+# Supply initial_password which is the password we are using now. Then this role will change that to `admin_password` later on
+# If it is not supplied then no password action is performed
+# The admin_password is for the username is `Administrator`
+initial_password: null
 admin_password: "should-be-set-in-inventory"
+
+# List of certificates dict to be deploy. The attributes is the ansible module win_certificate_store accepts. If it has an attribute `use_powershell` then it will run the task import-certs-use-powershell.yml. Do not use it except you have problems with the first one.
 win_base_certificates: []
 win_base_certificate_dir: '{{ ansible_install_dir }}\ssl'
+# The thumbprint of the certificate to be used for winrm.
+# At the start it is a self signed cert, however you can put a cert in - import it, get the thumprint and set the thumprint here
 winrm_certificate_thumbprint: ""
 # List of firewall rules to setup. See
-# http://docs.ansible.com/ansible/latest/win_firewall_rule_module.html
+# https://docs.ansible.com/ansible/latest/collections/community/windows/win_firewall_module.html
 win_firewall_rules: []
 # List of scheduled tasks to be deployed. For all sub options see the
 # task/deploy_schedule_tasks.yml
@@ -47,3 +59,5 @@ win_base_local_users: []
 win_user_rights: []
 
 logstash_endpoint_list: []
+
+custom_powershell_commands: []
