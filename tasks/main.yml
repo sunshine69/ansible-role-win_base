@@ -38,7 +38,7 @@
     version: "{{ item.version|default(omit) }}"
     source: "{{ item.source|default(omit) }}"
     skip_scripts: "{{ item.skip_scripts|default(omit) }}"
-    proxy_url: "{{ proxy_url||default(omit) }}"
+    proxy_url: "{{ proxy_url|default(omit) }}"
     proxy_username: "{{ proxy_username|default(omit) }}"
     proxy_password: "{{ proxy_password|default(omit) }}"
     install_args: "{{ item.install_args|default(omit) }}"
